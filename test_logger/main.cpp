@@ -25,21 +25,21 @@ int main(){
                                log_target_bitmask, log_level);
     
     std::unordered_map<std::string, ILogger*> cam_logger;
-    std::string camid = "cam_test_logger";
-    cam_logger[camid] = new SPDLogger("app" + APP_ID, camid, "./output/" + camid + ".log",
+    std::string moduleid = "cam_test_logger";
+    cam_logger[moduleid] = new SPDLogger("app" + APP_ID, moduleid, "./output/" + moduleid + ".log",
                                       log_target_bitmask, log_level);
 
     app_logger->info("Starting app...");
-    cam_logger[camid]->info("Starting cam  %d...", 0);
+    cam_logger[moduleid]->info("Starting cam  %d...", 0);
 
 
     LoggerPool* logger_pool;
     logger_pool = LoggerPool::getInstance();
 
-    logger_pool->add_logger_module("app"+APP_ID, "cam_pool_0", "./output/" + camid + ".log",
+    logger_pool->add_logger_module("app"+APP_ID, "module1", "./output/" + moduleid + ".log",
                                       log_target_bitmask, log_level);
 
-    logger_pool->add_logger_module("app"+APP_ID, "cam_pool_1", "./output/" + camid + ".log",
+    logger_pool->add_logger_module("app"+APP_ID, "module2", "./output/" + moduleid + ".log",
                                       log_target_bitmask, log_level);
 
     auto loggers = logger_pool->get_loggers();
