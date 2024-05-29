@@ -21,12 +21,12 @@ int main(){
 
     std::string APP_ID = "_test_logger";
     ILogger* app_logger;
-    app_logger = new SPDLogger("app"+APP_ID, "main", "/workspace/build/logs/main/app" + APP_ID + ".log",
+    app_logger = new SPDLogger("app"+APP_ID, "main", "./output/" + APP_ID + ".log",
                                log_target_bitmask, log_level);
     
     std::unordered_map<std::string, ILogger*> cam_logger;
     std::string camid = "cam_test_logger";
-    cam_logger[camid] = new SPDLogger("app" + APP_ID, camid, "/workspace/build/logs/cameras/" + camid + ".log",
+    cam_logger[camid] = new SPDLogger("app" + APP_ID, camid, "./output/" + camid + ".log",
                                       log_target_bitmask, log_level);
 
     app_logger->info("Starting app...");
@@ -36,10 +36,10 @@ int main(){
     LoggerPool* logger_pool;
     logger_pool = LoggerPool::getInstance();
 
-    logger_pool->add_logger_module("app"+APP_ID, "cam_pool_0", "/workspace/build/logs/cameras/" + camid + ".log",
+    logger_pool->add_logger_module("app"+APP_ID, "cam_pool_0", "./output/" + camid + ".log",
                                       log_target_bitmask, log_level);
 
-    logger_pool->add_logger_module("app"+APP_ID, "cam_pool_1", "/workspace/build/logs/cameras/" + camid + ".log",
+    logger_pool->add_logger_module("app"+APP_ID, "cam_pool_1", "./output/" + camid + ".log",
                                       log_target_bitmask, log_level);
 
     auto loggers = logger_pool->get_loggers();
