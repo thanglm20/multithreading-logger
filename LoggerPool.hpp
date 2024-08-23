@@ -9,7 +9,7 @@
 #include <mutex>
 #include <thread>
 #include <memory>
-
+#include <condition_variable>
 #include "SPDLogger.h"
 
 class LogWorker{
@@ -19,6 +19,9 @@ private:
     std::thread m_worker;
     std::mutex m_mutex;
     bool m_is_running = true;
+    std::atomic<bool> is_new_message = false;
+    std::mutex m_unique_mutex;
+    std::condition_variable m_cv;
 public:
     explicit LogWorker(const std::string &strAppName,
         const std::string &strModuleName,
@@ -39,8 +42,19 @@ public:
                 m_worker.join();
             }
         }
+
+        void wait_message(){
+            std::unique_lock<std::mutex> lk(m_unique_mutex);
+            m_cv.wait(lk);
+        }
+
+        void notify_message(){
+            m_cv.notify_one();
+        }
+
         static void process_log(LogWorker* log_worker){
             while(log_worker->m_is_running){
+                log_worker->wait_message();
                 if(!log_worker->m_logs_queue.empty()){
                     std::lock_guard<std::mutex> lk(log_worker->m_mutex);
                     auto log = log_worker->m_logs_queue.front();
@@ -58,7 +72,6 @@ public:
                     }
                     log_worker->m_logs_queue.pop();
                 }
-                
             }
         }
         
@@ -69,6 +82,7 @@ public:
         void info(const std::string &strMessage){
             std::lock_guard<std::mutex> lk(m_mutex);
             m_logs_queue.push({"info", strMessage});
+            notify_message();
         }
 
         template<typename ... Args>
@@ -78,6 +92,7 @@ public:
         void warn(const std::string &strMessage){
             std::lock_guard<std::mutex> lk(m_mutex);
             m_logs_queue.push({"warn", strMessage});
+            notify_message();
         }
 
         template<typename ... Args>
@@ -87,6 +102,7 @@ public:
         void debug(const std::string &strMessage){
             std::lock_guard<std::mutex> lk(m_mutex);
             m_logs_queue.push({"debug", strMessage});
+            notify_message();
         }
 
         template<typename ... Args>
@@ -96,6 +112,7 @@ public:
         void error(const std::string &strMessage){
             std::lock_guard<std::mutex> lk(m_mutex);
             m_logs_queue.push({"error", strMessage});
+            notify_message();
         }
         
 };
